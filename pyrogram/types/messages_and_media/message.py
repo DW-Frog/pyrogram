@@ -23,7 +23,7 @@ from typing import List, Match, Union, BinaryIO, Optional, Callable
 
 import pyrogram
 from pyrogram import raw, enums, types, utils
-from pyrogram.errors import MessageIdsEmpty, PeerIdInvalid
+from pyrogram.errors import MessageIdsEmpty, PeerIdInvalid, ChannelPrivate
 from pyrogram.parser import utils as parser_utils, Parser
 from ..object import Object
 from ..update import Update
@@ -953,7 +953,7 @@ class Message(Object, Update):
                         replies=0
                     )
                     parsed_message.service = enums.MessageServiceType.PINNED_MESSAGE
-                except MessageIdsEmpty:
+                except (MessageIdsEmpty, ChannelPrivate):
                     pass
 
             if isinstance(action, raw.types.MessageActionGameScore):
@@ -968,7 +968,7 @@ class Message(Object, Update):
                         )
 
                         parsed_message.service = enums.MessageServiceType.GAME_HIGH_SCORE
-                    except MessageIdsEmpty:
+                    except (MessageIdsEmpty, ChannelPrivate):
                         pass
 
         if isinstance(message, raw.types.Message):
@@ -1272,7 +1272,7 @@ class Message(Object, Update):
                         )
 
                     parsed_message.reply_to_message = reply_to_message
-                except MessageIdsEmpty:
+                except (MessageIdsEmpty, ChannelPrivate):
                     pass
 
         if business_connection_id:
