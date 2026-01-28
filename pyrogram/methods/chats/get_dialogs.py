@@ -98,9 +98,12 @@ class GetDialogs:
             last = dialogs[-1]
 
             if last:
-                offset_id = last.top_message.id
-                offset_date = utils.datetime_to_timestamp(last.top_message.date)
-                offset_peer = await self.resolve_peer(last.chat.id)
+                try:
+                    offset_id = last.top_message.id
+                    offset_date = utils.datetime_to_timestamp(last.top_message.date)
+                    offset_peer = await self.resolve_peer(last.chat.id)
+                except:
+                    pass
 
             for dialog in dialogs:
                 yield dialog
