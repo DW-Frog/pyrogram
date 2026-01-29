@@ -102,8 +102,8 @@ class GetDialogs:
                     offset_id = last.top_message.id
                     offset_date = utils.datetime_to_timestamp(last.top_message.date)
                     offset_peer = await self.resolve_peer(last.chat.id)
-                except:
-                    pass
+                except: # restrict chat
+                    offset_peer = await self.resolve_peer(last.chat.id)
 
             for dialog in dialogs:
                 yield dialog
