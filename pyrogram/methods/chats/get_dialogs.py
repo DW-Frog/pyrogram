@@ -16,6 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+import traceback
 from typing import AsyncGenerator, Optional
 
 import pyrogram
@@ -106,13 +107,13 @@ class GetDialogs:
                     else:
                         # Restricted 채팅방: top_message가 None임
                         # raw(TL Object)에서 정수형 ID를 직접 가져오고, 날짜는 0으로 설정
-                        offset_id = last.raw.top_message
+                        offset_id = last._raw.top_message
                         offset_date = 0 
                     
                     # Peer는 채팅방 ID로 변환 (기존 유지)
                     offset_peer = await self.resolve_peer(last.chat.id)
                 except Exception as e: # restrict chat
-                    print(e)
+                    traceback.print_exc()
 
             for dialog in dialogs:
                 yield dialog
