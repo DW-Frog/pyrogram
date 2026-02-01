@@ -100,17 +100,30 @@ class GetDialogs:
 
             if last:
                 try:
+                    # 1. ID는 _raw에서 안전하게 가져옵니다. (기존 유지)
+                    offset_id = last._raw.top_message
+        
+                    # 2. [핵심 수정] 날짜를 0으로 바로 설정하지 않고, r.messages에서 검색합니다.
+                    # Restricted 채널이라도 API 응답의 'messages' 리스트(Vector<Message>)에는 
+                    # 해당 ID의 메시지 헤더 정보(date 등)가 들어있는 경우가 많습니다.
+                    
+                    # 먼저 High-level 객체에 있는지 확인
                     if last.top_message:
-                        # 정상적인 채팅방: 메시지 객체에서 ID와 날짜를 가져옴
-                        offset_id = last.top_message.id
                         offset_date = utils.datetime_to_timestamp(last.top_message.date)
                     else:
-                        # Restricted 채팅방: top_message가 None임
-                        # raw(TL Object)에서 정수형 ID를 직접 가져오고, 날짜는 0으로 설정
-                        offset_id = last._raw.top_message
-                        offset_date = 0 
-                    
-                    # Peer는 채팅방 ID로 변환 (기존 유지)
+                        # High-level에 없으면(None이면), Raw 응답(r)의 messages 목록을 뒤집니다.
+                        # r은 invoke로 받아온 변수입니다.
+                        found_raw_msg = next((m for m in r.messages if m.id == offset_id), None)
+                        
+                        if found_raw_msg:
+                            # 찾았다! 진짜 날짜를 사용합니다. (무한 루프 방지)
+                            offset_date = found_raw_msg.date
+                            print(f"[Fix] Found hidden date for restricted chat: {offset_date}")
+                        else:
+                            # 진짜로 정보가 아예 없으면 어쩔 수 없이 0 사용
+                            offset_date = 0
+        
+                    # 3. Peer 설정 (기존 유지)
                     offset_peer = await self.resolve_peer(last.chat.id)
                 except Exception as e: # restrict chat
                     traceback.print_exc()
