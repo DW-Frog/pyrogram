@@ -99,11 +99,20 @@ class GetDialogs:
 
             if last:
                 try:
-                    offset_id = last.top_message.id
-                    offset_date = utils.datetime_to_timestamp(last.top_message.date)
+                    if last.top_message:
+                        # 정상적인 채팅방: 메시지 객체에서 ID와 날짜를 가져옴
+                        offset_id = last.top_message.id
+                        offset_date = utils.datetime_to_timestamp(last.top_message.date)
+                    else:
+                        # Restricted 채팅방: top_message가 None임
+                        # raw(TL Object)에서 정수형 ID를 직접 가져오고, 날짜는 0으로 설정
+                        offset_id = last.raw.top_message
+                        offset_date = 0 
+                    
+                    # Peer는 채팅방 ID로 변환 (기존 유지)
                     offset_peer = await self.resolve_peer(last.chat.id)
-                except: # restrict chat
-                    offset_peer = await self.resolve_peer(last.chat.id)
+                except Exception as e: # restrict chat
+                    print(e)
 
             for dialog in dialogs:
                 yield dialog
